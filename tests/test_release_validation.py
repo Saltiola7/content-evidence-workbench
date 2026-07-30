@@ -47,13 +47,13 @@ def _write(path: Path, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def test_static_session_allows_only_generated_ui_ids(tmp_path: Path) -> None:
+def test_static_session_allows_platform_rendering_differences(tmp_path: Path) -> None:
     committed = _session()
     generated = deepcopy(committed)
     generated["cells"][0]["outputs"][0]["data"]["text/html"] = (  # type: ignore[index]
         "<h1>Content Evidence Workbench</h1>"
         "<marimo-ui-element random-id='second'>"
-        "Synthetic corpus"
+        "Synthetic corpus · platform float 0.123456789"
         "</marimo-ui-element>"
     )
     committed_path = tmp_path / "committed.json"
@@ -64,16 +64,31 @@ def test_static_session_allows_only_generated_ui_ids(tmp_path: Path) -> None:
     validate_static_session(committed_path, generated_path)
 
 
-def test_static_session_rejects_meaningful_output_drift(tmp_path: Path) -> None:
+def test_static_session_rejects_stale_source_identity(tmp_path: Path) -> None:
     committed = _session()
     generated = deepcopy(committed)
-    generated["cells"][0]["outputs"][0]["data"]["text/html"] += "changed"  # type: ignore[index]
+    generated["cells"][0]["code_hash"] = "changed-cell-hash"  # type: ignore[index]
     committed_path = tmp_path / "committed.json"
     generated_path = tmp_path / "generated.json"
     _write(committed_path, committed)
     _write(generated_path, generated)
 
-    with pytest.raises(RuntimeError, match="differs"):
+    with pytest.raises(RuntimeError, match="stale"):
+        validate_static_session(committed_path, generated_path)
+
+
+def test_static_session_rejects_missing_required_output(tmp_path: Path) -> None:
+    committed = _session()
+    generated = deepcopy(committed)
+    generated["cells"][0]["outputs"][0]["data"]["text/html"] = (  # type: ignore[index]
+        "<h1>Content Evidence Workbench</h1>"
+    )
+    committed_path = tmp_path / "committed.json"
+    generated_path = tmp_path / "generated.json"
+    _write(committed_path, committed)
+    _write(generated_path, generated)
+
+    with pytest.raises(RuntimeError, match="Synthetic corpus"):
         validate_static_session(committed_path, generated_path)
 
 

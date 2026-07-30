@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 ERROR_MARKERS = (
     "MarimoExceptionRaisedError",
@@ -18,19 +17,15 @@ REQUIRED_MARKERS = (
     "Content Evidence Workbench",
     "Synthetic corpus",
 )
-_RANDOM_ID = re.compile(r"random-id='[^']+'")
 
 
-def _normalize(value: Any) -> Any:
-    """Remove only Marimo's nondeterministic presentation identifiers."""
+class SessionIdentity(NamedTuple):
+    """Source-bound identity that is stable across execution platforms."""
 
-    if isinstance(value, str):
-        return _RANDOM_ID.sub("random-id='<generated>'", value)
-    if isinstance(value, list):
-        return [_normalize(item) for item in value]
-    if isinstance(value, dict):
-        return {key: _normalize(item) for key, item in value.items()}
-    return value
+    version: str
+    marimo_version: str
+    script_metadata_hash: str
+    cells: tuple[tuple[str, str], ...]
 
 
 def _load_session(path: Path) -> dict[str, Any]:
@@ -48,8 +43,9 @@ def _validate_session(payload: dict[str, Any], path: Path) -> None:
     metadata = payload.get("metadata")
     if payload.get("version") != "1" or not isinstance(metadata, dict):
         raise RuntimeError(f"Marimo session metadata is incomplete: {path}")
-    if not isinstance(metadata.get("script_metadata_hash"), str):
-        raise RuntimeError(f"Marimo session lacks a script metadata hash: {path}")
+    for field in ("marimo_version", "script_metadata_hash"):
+        if not isinstance(metadata.get(field), str):
+            raise RuntimeError(f"Marimo session lacks {field!r}: {path}")
     if not isinstance(cells, list) or not cells:
         raise RuntimeError(f"Marimo session has no cells: {path}")
 
@@ -64,7 +60,11 @@ def _validate_session(payload: dict[str, Any], path: Path) -> None:
             raise RuntimeError(f"Marimo session lacks required output {marker!r}: {path}")
 
     for cell in cells:
-        if not isinstance(cell, dict) or not isinstance(cell.get("code_hash"), str):
+        if (
+            not isinstance(cell, dict)
+            or not isinstance(cell.get("id"), str)
+            or not isinstance(cell.get("code_hash"), str)
+        ):
             raise RuntimeError(f"Marimo session contains an invalid cell: {path}")
         console = cell.get("console")
         if not isinstance(console, list):
@@ -73,17 +73,26 @@ def _validate_session(payload: dict[str, Any], path: Path) -> None:
             raise RuntimeError(f"Marimo session contains console output: {path}")
 
 
+def _session_identity(payload: dict[str, Any]) -> SessionIdentity:
+    metadata = payload["metadata"]
+    cells = payload["cells"]
+    return SessionIdentity(
+        version=payload["version"],
+        marimo_version=metadata["marimo_version"],
+        script_metadata_hash=metadata["script_metadata_hash"],
+        cells=tuple((cell["id"], cell["code_hash"]) for cell in cells),
+    )
+
+
 def validate_static_session(committed_path: Path, generated_path: Path) -> None:
-    """Require semantic parity while tolerating only generated UI random IDs."""
+    """Require source parity and independently validate both rendered snapshots."""
 
     committed = _load_session(committed_path)
     generated = _load_session(generated_path)
     _validate_session(committed, committed_path)
     _validate_session(generated, generated_path)
-    if _normalize(committed) != _normalize(generated):
-        raise RuntimeError(
-            "committed static session differs from a fresh export beyond generated UI IDs"
-        )
+    if _session_identity(committed) != _session_identity(generated):
+        raise RuntimeError("committed static session is stale relative to the fresh source export")
 
 
 def main() -> None:

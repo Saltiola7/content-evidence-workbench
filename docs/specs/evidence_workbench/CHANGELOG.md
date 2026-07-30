@@ -40,9 +40,10 @@ title: Content Evidence Workbench Changelog
 
 ## 2026-07-29 - Static preview gate correction
 
-- Replaced byte-for-byte session drift checks with semantic comparison that
-  tolerates only Marimo's generated UI `random-id` values.
-- Kept source hashes, cell hashes, rendered outputs, console cleanliness, and
-  private-path checks fail closed.
-- Added regression coverage for allowed presentation IDs, meaningful output
-  drift, runtime errors, and console output.
+- Replaced byte-for-byte session drift checks with source and cell identity
+  comparison. This tolerates Marimo UI IDs and platform-level floating-point
+  rendering differences without accepting stale notebook code.
+- Validated committed and fresh snapshots independently for required output,
+  runtime errors, console cleanliness, and private paths.
+- Added regression coverage for portable rendering, stale source identity,
+  missing output, runtime errors, and console output.
