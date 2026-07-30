@@ -1,3 +1,12 @@
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "marimo==0.23.15",
+#     "numpy==2.5.1",
+#     "scikit-learn==1.9.0",
+#     "scipy==1.18.0",
+# ]
+# ///
 import marimo
 
 __generated_with = "0.23.15"
@@ -6,6 +15,8 @@ app = marimo.App(width="full")
 
 @app.cell
 def _():
+    import html as _html
+
     import marimo as mo
 
     from evidence_workbench import (
@@ -27,6 +38,39 @@ def _():
         retrieve_latent,
         retrieve_lexical,
     )
+
+    def render_table(rows, columns, caption):
+        if not rows:
+            return mo.md("*No rows are available.*")
+
+        def _cell(value):
+            rendered = "" if value is None else str(value)
+            return _html.escape(rendered).replace("\n", "<br>")
+
+        _caption = _html.escape(caption)
+        _header = "".join(
+            f'<th scope="col" style="text-align:left;padding:0.5rem;'
+            f'border-bottom:1px solid var(--sl-color-neutral-300)">{_cell(label)}</th>'
+            for _, label in columns
+        )
+        _body = "".join(
+            "<tr>"
+            + "".join(
+                f'<td style="vertical-align:top;padding:0.5rem;'
+                f'border-bottom:1px solid var(--sl-color-neutral-200)">'
+                f"{_cell(row.get(key, ''))}</td>"
+                for key, _ in columns
+            )
+            + "</tr>"
+            for row in rows
+        )
+        return mo.Html(
+            f'<div style="max-width:100%;overflow:auto;max-height:34rem">'
+            f'<table style="width:100%;border-collapse:collapse">'
+            f'<caption style="text-align:left;font-weight:600;padding:0.5rem 0">'
+            f"{_caption}</caption><thead><tr>{_header}</tr></thead>"
+            f"<tbody>{_body}</tbody></table></div>"
+        )
 
     mo.md(
         """
@@ -59,6 +103,7 @@ def _():
         generate_corpus,
         mo,
         parse_upload,
+        render_table,
         retrieve_latent,
         retrieve_lexical,
     )
@@ -286,7 +331,7 @@ def _(
 
 
 @app.cell
-def _(latent_result, lexical_result, mo):
+def _(latent_result, lexical_result, mo, render_table):
     def _rows(result):
         if result is None:
             return []
@@ -312,18 +357,27 @@ def _(latent_result, lexical_result, mo):
     lexical_status = lexical_result.status if lexical_result is not None else "waiting_for_corpus"
     latent_status = latent_result.status if latent_result is not None else "waiting_for_corpus"
 
-    def _evidence_table(rows, label):
-        if not rows:
-            return mo.md("*No evidence is available for this method and query.*")
-        return mo.ui.table(
-            rows,
-            selection="single",
-            page_size=6,
-            wrapped_columns=["exact_source_text"],
-            show_download=False,
-            label=label,
-        )
-
+    _columns = (
+        ("rank", "Rank"),
+        ("score", "Score"),
+        ("title", "Title"),
+        ("document_id", "Document"),
+        ("offsets", "Offsets"),
+        ("matched_terms", "Matched terms"),
+        ("entities", "Entities"),
+        ("exact_source_text", "Exact source text"),
+        ("content_sha256", "Content SHA-256"),
+    )
+    lexical_table = render_table(
+        lexical_rows,
+        _columns,
+        "Lexical evidence with exact citations",
+    )
+    latent_table = render_table(
+        latent_rows,
+        _columns,
+        "Latent evidence with exact citations",
+    )
     mo.vstack(
         [
             mo.md(
@@ -335,19 +389,13 @@ def _(latent_result, lexical_result, mo):
                     mo.vstack(
                         [
                             mo.md(f"### Lexical · `{lexical_status}`"),
-                            _evidence_table(
-                                lexical_rows,
-                                "Lexical evidence with exact citations",
-                            ),
+                            lexical_table,
                         ]
                     ),
                     mo.vstack(
                         [
                             mo.md(f"### Latent semantic · `{latent_status}`"),
-                            _evidence_table(
-                                latent_rows,
-                                "Latent evidence with exact citations",
-                            ),
+                            latent_table,
                         ]
                     ),
                 ],
@@ -357,7 +405,7 @@ def _(latent_result, lexical_result, mo):
             ),
         ]
     )
-    return latent_rows, lexical_rows
+    return latent_rows, latent_table, lexical_rows, lexical_table
 
 
 @app.cell
@@ -471,7 +519,7 @@ def _(
 
 
 @app.cell
-def _(ledger_state, mo):
+def _(ledger_state, mo, render_table):
     review_rows = [
         {
             "sequence": entry.sequence,
@@ -486,24 +534,27 @@ def _(ledger_state, mo):
         }
         for entry in ledger_state().entries
     ]
-    _review_display = (
-        mo.ui.table(
-            review_rows,
-            selection=None,
-            page_size=6,
-            wrapped_columns=["note", "exact_source_text"],
-            show_download=False,
-            label="Append-only review decisions",
-        )
-        if review_rows
-        else mo.md("*No review decisions have been recorded in this session.*")
+    review_display = render_table(
+        review_rows,
+        (
+            ("sequence", "Sequence"),
+            ("action", "Action"),
+            ("prior_rank", "Prior rank"),
+            ("resulting_rank", "Resulting rank"),
+            ("title", "Title"),
+            ("offsets", "Offsets"),
+            ("note", "Note"),
+            ("exact_source_text", "Exact source text"),
+            ("content_sha256", "Content SHA-256"),
+        ),
+        "Append-only review decisions",
     )
-    mo.vstack([_review_display])
-    return (review_rows,)
+    mo.vstack([review_display])
+    return review_display, review_rows
 
 
 @app.cell
-def _(entity_graph, mo):
+def _(entity_graph, mo, render_table):
     entity_rows = (
         [
             {
@@ -517,26 +568,30 @@ def _(entity_graph, mo):
         if entity_graph is not None
         else []
     )
+    entity_table = render_table(
+        entity_rows,
+        (
+            ("source", "Source"),
+            ("target", "Target"),
+            ("shared_chunks", "Shared chunks"),
+            ("chunk_ids", "Chunk IDs"),
+        ),
+        "Entity co-occurrence graph",
+    )
     mo.vstack(
         [
             mo.md(
                 "## Entity context\n\n"
                 "Edges are deterministic co-occurrences of declared entity labels."
             ),
-            mo.ui.table(
-                entity_rows,
-                selection=None,
-                page_size=8,
-                show_download=False,
-                label="Entity co-occurrence graph",
-            ),
+            entity_table,
         ]
     )
-    return (entity_rows,)
+    return entity_rows, entity_table
 
 
 @app.cell
-def _(latent_evaluation, lexical_evaluation, mo):
+def _(latent_evaluation, lexical_evaluation, mo, render_table):
     _evaluations = [
         evaluation
         for evaluation in (lexical_evaluation, latent_evaluation)
@@ -550,6 +605,15 @@ def _(latent_evaluation, lexical_evaluation, mo):
         }
         for method, evaluation in zip(("lexical", "latent"), _evaluations, strict=False)
     ]
+    metric_table = render_table(
+        metric_rows,
+        (
+            ("method", "Method"),
+            ("available", "Available"),
+            ("reason", "Reason"),
+        ),
+        "Judgment-gated retrieval metrics",
+    )
     mo.vstack(
         [
             mo.md(
@@ -557,15 +621,10 @@ def _(latent_evaluation, lexical_evaluation, mo):
                 "Metrics remain unavailable until separately supplied judgments identify "
                 "the exact query and chunk identities."
             ),
-            mo.ui.table(
-                metric_rows,
-                selection=None,
-                show_download=False,
-                label="Judgment-gated retrieval metrics",
-            ),
+            metric_table,
         ]
     )
-    return (metric_rows,)
+    return metric_rows, metric_table
 
 
 @app.cell
@@ -604,36 +663,39 @@ def _(
 
 @app.cell
 def _(export_bundle, mo):
+    json_download = mo.download(
+        export_bundle.json_text,
+        filename="evidence-session.json",
+        mimetype="application/json",
+        label="Download JSON evidence packet",
+    )
+    evidence_download = mo.download(
+        export_bundle.evidence_csv,
+        filename="evidence-results.csv",
+        mimetype="text/csv",
+        label="Download formula-safe evidence CSV",
+    )
+    review_download = mo.download(
+        export_bundle.review_csv,
+        filename="evidence-review-ledger.csv",
+        mimetype="text/csv",
+        label="Download formula-safe review CSV",
+    )
     mo.vstack(
         [
             mo.md(f"## Safe exports\n\nBundle SHA-256: `{export_bundle.bundle_sha256}`"),
             mo.hstack(
                 [
-                    mo.download(
-                        export_bundle.json_text,
-                        filename="evidence-session.json",
-                        mimetype="application/json",
-                        label="Download JSON evidence packet",
-                    ),
-                    mo.download(
-                        export_bundle.evidence_csv,
-                        filename="evidence-results.csv",
-                        mimetype="text/csv",
-                        label="Download formula-safe evidence CSV",
-                    ),
-                    mo.download(
-                        export_bundle.review_csv,
-                        filename="evidence-review-ledger.csv",
-                        mimetype="text/csv",
-                        label="Download formula-safe review CSV",
-                    ),
+                    json_download,
+                    evidence_download,
+                    review_download,
                 ],
                 justify="start",
                 wrap=True,
             ),
         ]
     )
-    return
+    return evidence_download, json_download, review_download
 
 
 if __name__ == "__main__":

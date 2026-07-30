@@ -16,6 +16,12 @@ last_updated: 2026-07-29
 | CEW-006 | Add CI, WASM export, and browser validation | P0 | pending | CEW-004 | manifests and workflows | validation commands | no | Release needs reproducible authority | M | CI and local export pass |
 | CEW-007 | Prepare public repository and deployment release | P0 | pending | CEW-005, CEW-006 | release evidence | exact source SHA | no | External publication follows review | S | Release, Pages, and Molab gates pass |
 
+## In progress
+
+- CEW-006: exact WASM dependencies, local package wheel, semantic tables, tests,
+  strict Marimo checks, and executed export pass. Browser output rendering
+  remains unresolved and therefore blocks completion.
+
 ## Completed
 
 | id | completed | evidence |

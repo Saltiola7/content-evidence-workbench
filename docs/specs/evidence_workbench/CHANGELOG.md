@@ -24,3 +24,14 @@ title: Content Evidence Workbench Changelog
   after independent review.
 - Passed 28 focused tests, curated Ruff checks, strict Marimo validation, and
   executable HTML export.
+
+## 2026-07-29 - WASM packaging hardening
+
+- Declared exact browser-runtime dependencies and the local `src` import root
+  so Marimo can package the clean-room domain library as a local wheel.
+- Replaced interactive result tables with escaped semantic HTML tables to
+  preserve accessibility and avoid uninitialized table RPCs in static previews.
+- Passed 29 focused tests, curated Ruff checks, strict Marimo validation, and
+  executed WASM export.
+- Kept the release gate open because the local in-app browser worker did not
+  render notebook output despite reporting no runtime error.
