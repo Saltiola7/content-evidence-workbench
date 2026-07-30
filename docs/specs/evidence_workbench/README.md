@@ -179,11 +179,16 @@ The Marimo app remains a thin consumer of importable domain functions.
 - Empty queries and no-match states are explicit.
 - Lexical and latent scores are labeled and never merged without normalization.
 - Entity graph uses caller-provided or deterministic rule-based entities only.
+- Entity labels are limited to 32 per document and phrase matching uses word
+  boundaries before graph expansion.
+- Query identities bind normalized query text to the active corpus digest so
+  judgments cannot drift across corpora.
 - Evidence always includes exact source citation.
 - Metrics use separately supplied judgments and define denominator behavior.
 - Exported text escapes spreadsheet formula prefixes where CSV is used.
 - Uploaded bytes, document text, review notes, and API credentials never enter
-  logs, analytics, committed snapshots, URLs, or exception messages.
+  logs, analytics, committed snapshots, URLs, or exception messages. Uploaded
+  content may appear only in the visitor's explicit evidence download.
 - Default path performs no network request.
 - BYOK and generated synthesis are deferred until deterministic MVP passes.
 - No employer, client, SaaS Pegasus, or premium-template source or artifacts.
@@ -211,4 +216,3 @@ MVP is single-session and deterministic. Supported releases receive dependency
 and vulnerability review. Source and derived demos declare commit identity.
 Retirement removes deployment links only after canonical source is tagged and
 the replacement or archive path is documented.
-

@@ -5,6 +5,7 @@ __pycache__/
 .env.*
 !.env.example
 .marimo/
+__marimo__/session/
 .pytest_cache/
 .ruff_cache/
 .venv/
@@ -12,4 +13,3 @@ dist/
 node_modules/
 output/
 user-data/
-
