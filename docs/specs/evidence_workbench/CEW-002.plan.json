@@ -1,0 +1,25 @@
+{
+  "profile": "docs/specs/evidence_workbench/README.md",
+  "gates": {
+    "domain": {"applicability": "required"},
+    "behavior": {"applicability": "required"},
+    "spec": {"applicability": "required"},
+    "contract": {"applicability": "required"},
+    "test_driven_implementation": {"applicability": "required"},
+    "refactor": {"applicability": "required"},
+    "review_integrate": {"applicability": "required"},
+    "release": {
+      "applicability": "not_applicable",
+      "reason": "This cycle builds and validates the local deterministic MVP without publishing it."
+    },
+    "deploy": {
+      "applicability": "not_applicable",
+      "reason": "Pages and Molab changes belong to the separately reviewed release cycle."
+    },
+    "operate": {
+      "applicability": "not_applicable",
+      "reason": "The MVP creates no owner-operated service."
+    },
+    "maintain_retire": {"applicability": "required"}
+  }
+}
