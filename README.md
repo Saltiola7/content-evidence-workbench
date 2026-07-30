@@ -1,7 +1,19 @@
 # Content Evidence Workbench
 
+[![Quality and Pages](https://github.com/Saltiola7/content-evidence-workbench/actions/workflows/quality-pages.yml/badge.svg)](https://github.com/Saltiola7/content-evidence-workbench/actions/workflows/quality-pages.yml)
+
 Interactive clean-room workbench for deterministic content retrieval, exact
 citations, entity context, judged evaluation, and human evidence review.
+
+## Live demos
+
+- [GitHub Pages WASM app](https://saltiola7.github.io/content-evidence-workbench/)
+- [Molab notebook preview](https://molab.marimo.io/github/Saltiola7/content-evidence-workbench/blob/main/src/app.py)
+- [Molab WASM runtime](https://molab.marimo.io/github/Saltiola7/content-evidence-workbench/blob/main/src/app.py/wasm)
+
+Each hosted route uses the clean-room source in this repository. The Pages app
+executes in the visitor's browser; its CI artifact is built from the locked
+environment and the importable local package.
 
 The local MVP includes:
 
@@ -12,7 +24,7 @@ The local MVP includes:
 - judgment-gated precision at k, recall at k, MRR, nDCG, and coverage
 - append-only accept, reject, annotate, defer, and reorder decisions
 - citation-preserving JSON plus spreadsheet-safe CSV evidence exports
-- 30 focused tests, strict Marimo validation, an executable WASM export, and a
+- 35 focused tests, strict Marimo validation, an executable WASM export, and a
   locked environment
 
 No employer source, SaaS Pegasus code, premium UI assets, client data, or
@@ -46,8 +58,9 @@ packages the importable local library, exercises query recomputation in
 Chromium, scans critical vulnerabilities, emits an SPDX SBOM, and deploys the
 same WASM artifact to GitHub Pages.
 
-Status: release candidate. Local browser interaction passes; public GitHub,
-Pages, and Molab URLs remain pending until repository publication.
+Status: public MVP. The hosted quality workflow passes tests, static checks,
+source-bound session validation, executed WASM packaging, Chromium interaction,
+critical-vulnerability scanning, SBOM generation, and Pages deployment.
 
 ## License
 

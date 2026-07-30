@@ -47,3 +47,13 @@ title: Content Evidence Workbench Changelog
   runtime errors, console cleanliness, and private paths.
 - Added regression coverage for portable rendering, stale source identity,
   missing output, runtime errors, and console output.
+
+## 2026-07-29 - Public MVP release
+
+- Published the clean-room source at
+  `github.com/Saltiola7/content-evidence-workbench`.
+- Passed hosted tests, static checks, session validation, executed WASM package
+  inspection, Chromium query interaction, critical-vulnerability scanning, and
+  SPDX SBOM generation in workflow run `30515738789`.
+- Deployed the validated artifact to GitHub Pages and verified the Pages,
+  Molab notebook, and Molab WASM routes.

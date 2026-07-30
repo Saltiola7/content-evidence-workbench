@@ -13,16 +13,12 @@ last_updated: 2026-07-29
 | CEW-003 | Implement deterministic domain package and synthetic corpus | P0 | completed | CEW-002 | `src/evidence_workbench/`, `public/` | red tests | no | Core works without APIs | L | Focused pytest and Ruff pass |
 | CEW-004 | Build thin Marimo workbench | P0 | completed | CEW-003 | `src/app.py` | validated package | no | Browser demo exposes core journey | L | Strict Marimo and import smoke pass |
 | CEW-005 | Add evidence exports, documentation, and reference provenance | P1 | completed | CEW-004 | docs and reference outputs | validated sessions | yes | Retrieval claims need traceable evidence | M | Export and provenance gates pass |
-| CEW-006 | Add CI, WASM export, and browser validation | P0 | ready | CEW-004 | manifests and workflows | validation commands | no | Hosted CI must confirm corrected source-identity session gate | M | CI and local export pass |
-| CEW-007 | Prepare public repository and deployment release | P0 | pending | CEW-005, CEW-006 | release evidence | exact source SHA | no | External publication follows review | S | Release, Pages, and Molab gates pass |
+| CEW-006 | Add CI, WASM export, and browser validation | P0 | completed | CEW-004 | manifests and workflows | validation commands | no | Hosted CI confirms the complete release gate | M | CI and local export pass |
+| CEW-007 | Prepare public repository and deployment release | P0 | completed | CEW-005, CEW-006 | release evidence | exact source SHA | no | Public source and browser-only demos are live | S | Release, Pages, and Molab gates pass |
 
 ## In progress
 
-- CEW-006: local gates pass. Exact dependencies, correctly rooted local package
-  wheel, semantic tables, strict checks, executed export, Chromium query
-  interaction, source-bound static-session validation, critical-vulnerability
-  scan, SBOM, and Pages workflow exist. Hosted CI must confirm before the item
-  is completed.
+- None for the public MVP.
 
 ## Completed
 
@@ -33,3 +29,5 @@ last_updated: 2026-07-29
 | CEW-003 | 2026-07-29 | Deterministic package and 28 passing tests |
 | CEW-004 | 2026-07-29 | Strict Marimo check and executable HTML export |
 | CEW-005 | 2026-07-29 | Citation-preserving JSON, safe CSV, and provenance review |
+| CEW-006 | 2026-07-29 | Hosted run 30515738789 passed all quality and browser gates |
+| CEW-007 | 2026-07-29 | Public repository, Pages app, and Molab routes verified |
