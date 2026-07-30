@@ -1,0 +1,99 @@
+name: Quality and Pages
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+          python-version: "3.13"
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Run tests and static gates
+        run: |
+          uv run pytest -q
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run marimo check --strict src/app.py
+
+      - name: Verify committed static preview
+        run: |
+          uv run marimo export session src/app.py --force-overwrite --no-continue-on-error
+          git diff --exit-code -- src/__marimo__/session/app.py.json
+
+      - name: Build and validate browser-only demo
+        run: |
+          uv run marimo export html-wasm src/app.py \
+            --output "${RUNNER_TEMP}/site" \
+            --mode run \
+            --no-show-code \
+            --execute \
+            --force
+          uv run python scripts/validate_wasm_export.py "${RUNNER_TEMP}/site"
+
+      - name: Install browser
+        run: uv run playwright install --with-deps chromium
+
+      - name: Exercise browser demo
+        run: uv run python scripts/browser_smoke.py "${RUNNER_TEMP}/site"
+
+      - name: Scan critical vulnerabilities
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7.4.0
+        with:
+          path: "."
+          fail-build: true
+          severity-cutoff: critical
+
+      - name: Generate dependency SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: "."
+          artifact-name: content-evidence-workbench.spdx.json
+          format: spdx-json
+          upload-artifact: true
+          upload-release-assets: false
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

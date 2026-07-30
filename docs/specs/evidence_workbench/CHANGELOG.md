@@ -27,11 +27,13 @@ title: Content Evidence Workbench Changelog
 
 ## 2026-07-29 - WASM packaging hardening
 
-- Declared exact browser-runtime dependencies and the local `src` import root
-  so Marimo can package the clean-room domain library as a local wheel.
+- Declared exact browser-runtime dependencies and moved the notebook beside the
+  src-layout package so Marimo produces an importable
+  `evidence_workbench/**` local wheel instead of a malformed `src/**` wheel.
 - Replaced interactive result tables with escaped semantic HTML tables to
   preserve accessibility and avoid uninitialized table RPCs in static previews.
-- Passed 29 focused tests, curated Ruff checks, strict Marimo validation, and
-  executed WASM export.
-- Kept the release gate open because the local in-app browser worker did not
-  render notebook output despite reporting no runtime error.
+- Added package inspection, browser interaction, static-session drift,
+  critical-vulnerability, SBOM, and Pages gates.
+- Passed 30 focused tests, curated Ruff checks, strict Marimo validation,
+  executed WASM export, and browser query recomputation without console errors.
+- Kept the release gate open only for hosted CI and public deployment evidence.

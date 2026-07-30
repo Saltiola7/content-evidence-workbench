@@ -12,7 +12,8 @@ The local MVP includes:
 - judgment-gated precision at k, recall at k, MRR, nDCG, and coverage
 - append-only accept, reject, annotate, defer, and reorder decisions
 - citation-preserving JSON plus spreadsheet-safe CSV evidence exports
-- 28 focused tests, strict Marimo validation, and a locked environment
+- 30 focused tests, strict Marimo validation, an executable WASM export, and a
+  locked environment
 
 No employer source, SaaS Pegasus code, premium UI assets, client data, or
 owner-funded API calls are included. See [CLEAN_ROOM.md](CLEAN_ROOM.md).
@@ -22,12 +23,12 @@ owner-funded API calls are included. See [CLEAN_ROOM.md](CLEAN_ROOM.md).
 ```bash
 uv sync
 uv run pytest -q
-uv run marimo edit app.py
+uv run marimo edit src/app.py
 ```
 
 Visitor uploads remain only in the active notebook runtime. The deterministic
 path performs no network calls, source-URL fetches, model calls, or persistence.
-Use the future WASM build when browser-only processing is required.
+Use the Pages or Molab WASM build when browser-only processing is required.
 
 ## Validation
 
@@ -35,11 +36,18 @@ Use the future WASM build when browser-only processing is required.
 uv run pytest -q
 uv run ruff check .
 uv run ruff format --check .
-uv run marimo check --strict app.py
+uv run marimo check --strict src/app.py
+uv run marimo export html-wasm src/app.py --output /tmp/cew-site --execute
+uv run python scripts/validate_wasm_export.py /tmp/cew-site
 ```
 
-Status: reviewed local MVP. GitHub Pages, Molab, accessibility, and browser
-release validation remain intentionally pending.
+The committed static snapshot contains synthetic output only. CI rebuilds it,
+packages the importable local library, exercises query recomputation in
+Chromium, scans critical vulnerabilities, emits an SPDX SBOM, and deploys the
+same WASM artifact to GitHub Pages.
+
+Status: release candidate. Local browser interaction passes; public GitHub,
+Pages, and Molab URLs remain pending until repository publication.
 
 ## License
 

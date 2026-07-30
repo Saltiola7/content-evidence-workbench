@@ -11,4 +11,5 @@ The public workbench generates its demonstration corpus at runtime with:
 No visitor, employer, client, or external source material is bundled here.
 Visitor uploads are bounded, processed in the active session, and excluded from
 committed assets. Release builds must record the exact repository commit
-identity; public WASM and browser artifacts are deferred to CEW-006.
+identity. The synthetic-only static session is committed beside
+`src/app.py`; CI rebuilds and browser-tests the WASM artifact.

@@ -11,16 +11,17 @@ last_updated: 2026-07-29
 | CEW-001 | Commit product intent, domain, behavior, contracts, and cycle plan | P0 | completed | - | product specs and policy | approved portfolio Discovery | no | Clean authority precedes code | S | Spec checks pass |
 | CEW-002 | Write red domain and security tests | P0 | completed | CEW-001 | `tests/` | product spec | no | Behavior evidence precedes implementation | M | Tests fail for missing package |
 | CEW-003 | Implement deterministic domain package and synthetic corpus | P0 | completed | CEW-002 | `src/evidence_workbench/`, `public/` | red tests | no | Core works without APIs | L | Focused pytest and Ruff pass |
-| CEW-004 | Build thin Marimo workbench | P0 | completed | CEW-003 | `app.py` | validated package | no | Browser demo exposes core journey | L | Strict Marimo and import smoke pass |
+| CEW-004 | Build thin Marimo workbench | P0 | completed | CEW-003 | `src/app.py` | validated package | no | Browser demo exposes core journey | L | Strict Marimo and import smoke pass |
 | CEW-005 | Add evidence exports, documentation, and reference provenance | P1 | completed | CEW-004 | docs and reference outputs | validated sessions | yes | Retrieval claims need traceable evidence | M | Export and provenance gates pass |
-| CEW-006 | Add CI, WASM export, and browser validation | P0 | pending | CEW-004 | manifests and workflows | validation commands | no | Release needs reproducible authority | M | CI and local export pass |
+| CEW-006 | Add CI, WASM export, and browser validation | P0 | ready | CEW-004 | manifests and workflows | validation commands | no | Local gates pass; hosted CI must confirm | M | CI and local export pass |
 | CEW-007 | Prepare public repository and deployment release | P0 | pending | CEW-005, CEW-006 | release evidence | exact source SHA | no | External publication follows review | S | Release, Pages, and Molab gates pass |
 
 ## In progress
 
-- CEW-006: exact WASM dependencies, local package wheel, semantic tables, tests,
-  strict Marimo checks, and executed export pass. Browser output rendering
-  remains unresolved and therefore blocks completion.
+- CEW-006: local gates pass. Exact dependencies, correctly rooted local package
+  wheel, semantic tables, strict checks, executed export, Chromium query
+  interaction, critical-vulnerability scan, SBOM, and Pages workflow exist.
+  Hosted CI must confirm before the item is completed.
 
 ## Completed
 
